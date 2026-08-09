@@ -46,7 +46,7 @@ class AnalyticsController extends Controller
         $products = Product::all();
         $totalInventoryValue = $products->sum(fn ($p) => $p->unit_price * $p->quantity);
         $totalStockCount = $products->sum('quantity');
-        $lowStockCount = $products->where('quantity', '<=', 'reorder_level')->where('quantity', '>', 0)->count();
+        $lowStockCount = $products->filter(fn ($p) => $p->quantity <= $p->reorder_level && $p->quantity > 0)->count();
         $outOfStockCount = $products->where('quantity', '<=', 0)->count();
 
         $monthly = $this->getMonthlyData($period);

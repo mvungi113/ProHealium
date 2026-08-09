@@ -73,6 +73,8 @@ export const useStore = create((set, get) => ({
 
   setOnline: (online) => set({ isOnline: online }),
 
+  setAuthLoading: (loading) => set({ authLoading: loading }),
+
   login: (user, token) => {
     localStorage.setItem("rxpm_token", token);
     set({ currentUser: user, isAuthenticated: true, authLoading: false, token });

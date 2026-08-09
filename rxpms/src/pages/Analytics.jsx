@@ -111,7 +111,7 @@ function SalesReportView({ data }) {
       </div>
       {daily_sales?.length > 0 && (
         <Card><CardHeader><CardTitle>Daily Sales</CardTitle></CardHeader><CardContent><div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%"><BarChart data={daily_sales}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="date" stroke="#94a3b8" fontSize={12} /><YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${v}`} /><Tooltip formatter={(v) => formatCurrency(v)} /><Bar dataKey="revenue" name="Revenue" fill="#0f766e" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
+          <ResponsiveContainer width="100%" height="100%"><BarChart data={daily_sales}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="date" stroke="#94a3b8" fontSize={12} /><YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${v}`} /><Tooltip formatter={(v) => formatCurrency(v)} /><Bar dataKey="revenue" name="Revenue" fill="#0f766e" radius={[4, 4, 0, 0]} barSize={24} /></BarChart></ResponsiveContainer>
         </div></CardContent></Card>
       )}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -155,7 +155,7 @@ function FinancialReportView({ data }) {
       </div>
       {daily?.length > 0 && (
         <Card><CardHeader><CardTitle>Daily Revenue</CardTitle></CardHeader><CardContent><div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%"><BarChart data={daily}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="date" stroke="#94a3b8" fontSize={12} /><YAxis yAxisId="left" stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${v / 1000}k`} /><YAxis yAxisId="right" orientation="right" stroke="#94a3b8" fontSize={12} /><Tooltip formatter={(v, name) => name === "revenue" ? formatCurrency(v) : v} /><Legend /><Bar yAxisId="left" dataKey="revenue" name="Revenue" fill="#0f766e" radius={[4, 4, 0, 0]} /><Bar yAxisId="right" dataKey="orders" name="Orders" fill="#14b8a6" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
+          <ResponsiveContainer width="100%" height="100%"><BarChart data={daily}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="date" stroke="#94a3b8" fontSize={12} /><YAxis yAxisId="left" stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${v / 1000}k`} /><YAxis yAxisId="right" orientation="right" stroke="#94a3b8" fontSize={12} /><Tooltip formatter={(v, name) => name === "revenue" ? formatCurrency(v) : v} /><Legend /><Bar yAxisId="left" dataKey="revenue" name="Revenue" fill="#0f766e" radius={[4, 4, 0, 0]} barSize={20} /><Bar yAxisId="right" dataKey="orders" name="Orders" fill="#14b8a6" radius={[4, 4, 0, 0]} barSize={20} /></BarChart></ResponsiveContainer>
         </div></CardContent></Card>
       )}
       {daily?.length > 0 && (
@@ -183,7 +183,7 @@ function InventoryReportView({ data }) {
       <div className="grid gap-6 lg:grid-cols-2">
         {categoryData.length > 0 && (
           <Card><CardHeader><CardTitle>Category Value</CardTitle></CardHeader><CardContent><div className="h-[250px]">
-            <ResponsiveContainer width="100%" height="100%"><BarChart data={categoryData} layout="vertical"><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis type="number" stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${v}`} /><YAxis dataKey="name" type="category" width={120} stroke="#94a3b8" fontSize={11} /><Tooltip formatter={(v) => formatCurrency(v)} /><Bar dataKey="value" name="Value" fill="#0f766e" radius={[0, 4, 4, 0]} /></BarChart></ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%"><BarChart data={categoryData} layout="vertical"><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis type="number" stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${v}`} /><YAxis dataKey="name" type="category" width={120} stroke="#94a3b8" fontSize={11} /><Tooltip formatter={(v) => formatCurrency(v)} /><Bar dataKey="value" name="Value" fill="#0f766e" radius={[0, 4, 4, 0]} barSize={18} /></BarChart></ResponsiveContainer>
           </div></CardContent></Card>
         )}
         <Card><CardHeader><CardTitle>Category Details</CardTitle></CardHeader><CardContent>
@@ -370,7 +370,7 @@ export default function Analytics() {
                     <XAxis dataKey="hour" stroke="#94a3b8" fontSize={12} />
                     <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${v}`} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="revenue" name="Revenue" fill="#14b8a6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="revenue" name="Revenue" fill="#14b8a6" radius={[4, 4, 0, 0]} barSize={24} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -393,7 +393,7 @@ export default function Analytics() {
                       <XAxis type="number" stroke="#94a3b8" fontSize={12} />
                       <YAxis dataKey="name" type="category" width={150} stroke="#94a3b8" fontSize={11} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="sold" name="Units Sold" fill="#0f766e" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="sold" name="Units Sold" fill="#0f766e" radius={[0, 4, 4, 0]} barSize={20} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -411,7 +411,7 @@ export default function Analytics() {
                       <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} angle={-20} textAnchor="end" height={80} />
                       <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${v}`} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="revenue" name="Revenue" fill="#14b8a6" radius={[4, 4, 0, 0]} />
+<Bar dataKey="revenue" name="Revenue" fill="#14b8a6" radius={[4, 4, 0, 0]} barSize={24} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -482,7 +482,7 @@ export default function Analytics() {
                       <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
                       <YAxis stroke="#94a3b8" fontSize={12} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="sold" name="Units Sold" fill="#0f766e" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="sold" name="Units Sold" fill="#0f766e" radius={[4, 4, 0, 0]} barSize={20} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

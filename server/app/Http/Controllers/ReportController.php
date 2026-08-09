@@ -40,10 +40,9 @@ class ReportController extends Controller
             ->map(fn($group) => $group->sum('amount'))
             ->toArray();
 
-        $categoryBreakdown = SaleItem::selectRaw('product_name, SUM(quantity) as orders, SUM(subtotal) as revenue')
+        $categoryBreakdown = SaleItem::selectRaw('products.category as category, SUM(sale_items.quantity) as orders, SUM(sale_items.subtotal) as revenue')
             ->whereHas('sale', fn($q) => $q->where('status', 'Completed')->whereDate('created_at', '>=', $from)->whereDate('created_at', '<=', $to))
             ->join('products', 'sale_items.product_id', '=', 'products.id')
-            ->selectRaw('products.category as category, SUM(sale_items.quantity) as orders, SUM(sale_items.subtotal) as revenue')
             ->groupBy('products.category')
             ->get();
 
@@ -66,7 +65,7 @@ class ReportController extends Controller
     {
         $products = Product::all();
         $totalValue = (float) $products->sum(fn($p) => $p->quantity * $p->unit_price);
-        $lowStock = $products->filter(fn($p) => $p->quantity <= $p->reorderLevel && $p->quantity > 0);
+        $lowStock = $products->filter(fn($p) => $p->quantity <= $p->reorder_level && $p->quantity > 0);
         $outOfStock = $products->filter(fn($p) => $p->quantity <= 0);
         $expiringSoon = $products->filter(fn($p) => $p->expiry_date && Carbon::parse($p->expiry_date)->diffInDays(now()) <= 90);
 

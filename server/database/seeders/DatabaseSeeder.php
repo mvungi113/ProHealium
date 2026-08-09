@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -45,6 +46,26 @@ class DatabaseSeeder extends Seeder
 
         foreach ($products as $product) {
             Product::firstOrCreate(['sku' => $product['sku']], $product);
+        }
+
+        $defaultSettings = [
+            'pharmacy_name' => 'ProHealium Pharmacy',
+            'license_number' => 'PH-2025-001234',
+            'pharmacy_email' => 'info@prohealium.com',
+            'pharmacy_phone' => '+233 20 123 4567',
+            'pharmacy_address' => '123 Health Avenue, Accra, Ghana',
+            'pharmacy_about' => 'ProHealium Pharmacy provides quality healthcare products and professional pharmaceutical services.',
+            'low_stock_alerts' => 'true',
+            'expiry_alerts' => 'true',
+            'daily_sales_summary' => 'false',
+            'new_user_registration' => 'true',
+            'tax_rate' => '10',
+            'currency' => 'USD ($)',
+            'payment_methods' => 'Cash,Card',
+        ];
+
+        foreach ($defaultSettings as $key => $value) {
+            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 
         if (Sale::count() === 0) {
