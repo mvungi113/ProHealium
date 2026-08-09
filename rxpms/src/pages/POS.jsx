@@ -291,7 +291,6 @@ export default function POS() {
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
               {categories.map((category) => {
-                const style = getCategoryStyle(category);
                 const isActive = selectedCategory === category;
                 return (
                   <button key={category} onClick={() => setSelectedCategory(category)}

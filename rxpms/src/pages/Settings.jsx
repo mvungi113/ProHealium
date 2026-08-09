@@ -45,8 +45,7 @@ function Toggle({ checked, onChange }) {
 }
 
 export default function Settings() {
-  const user = useStore((s) => s.user);
-  const login = useStore((s) => s.login);
+  const user = useStore((s) => s.currentUser);
   const [activeSection, setActiveSection] = useState("pharmacy");
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);

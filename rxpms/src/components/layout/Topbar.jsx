@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Menu, Bell, User, LogOut, Settings, ChevronDown,
-  AlertTriangle, Package, Clock, Check, CheckCheck, X,
+  AlertTriangle, Package, Clock, Check, CheckCheck,
 } from "lucide-react";
 import { useStore } from "../../store/appStore";
+import { hasPermission } from "../../lib/rbac";
 import api from "../../lib/api";
 import { cn } from "../../lib/utils";
 
@@ -188,9 +189,11 @@ function UserDropdown({ onClose }) {
         <p className="text-xs text-slate-500">{currentUser?.email}</p>
         <span className="mt-1 inline-block rounded-full bg-primary-100 px-2 py-0.5 text-[10px] font-medium text-primary">{currentUser?.role || "Admin"}</span>
       </div>
-      <button onClick={() => { navigate("/settings"); onClose(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50">
-        <Settings className="h-4 w-4" /> Settings
-      </button>
+      {hasPermission(currentUser?.role, "/settings") && (
+        <button onClick={() => { navigate("/settings"); onClose(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50">
+          <Settings className="h-4 w-4" /> Settings
+        </button>
+      )}
       <button onClick={() => { logout(); onClose(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
         <LogOut className="h-4 w-4" /> Log out
       </button>

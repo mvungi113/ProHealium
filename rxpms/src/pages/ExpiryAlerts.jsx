@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertTriangle, RefreshCw, Package, Clock, Shield, XCircle, Search, ChevronRight } from "lucide-react";
+import { AlertTriangle, Package, Clock, Shield, XCircle, Search } from "lucide-react";
 import { useStore } from "../store/appStore";
 import { formatCurrency, formatDate, getDaysUntilExpiry, cn } from "../lib/utils";
 
@@ -141,7 +141,6 @@ export default function ExpiryAlerts() {
               {filtered.map((p) => {
                 const isExpired = p.daysLeft < 0;
                 const isCritical = p.daysLeft >= 0 && p.daysLeft <= 30;
-                const isWarning = p.daysLeft > 30 && p.daysLeft <= 60;
                 return (
                   <tr key={p.id}
                     className={cn("border-b border-slate-50 transition-colors",

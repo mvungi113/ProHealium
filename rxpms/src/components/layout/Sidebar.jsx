@@ -5,6 +5,7 @@ import {
   ReceiptText, Printer,
 } from "lucide-react";
 import { useStore } from "../../store/appStore";
+import { hasPermission } from "../../lib/rbac";
 import { cn } from "../../lib/utils";
 
 const navItems = [
@@ -24,7 +25,10 @@ const navItems = [
 
 export default function Sidebar({ mobileOpen, setMobileOpen }) {
   const logout = useStore((state) => state.logout);
+  const currentUser = useStore((state) => state.currentUser);
   const location = useLocation();
+
+  const allowedItems = navItems.filter((item) => hasPermission(currentUser?.role, item.path));
 
   return (
     <>
@@ -42,7 +46,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           </div>
           <nav className="flex-1 overflow-y-auto p-3">
             <ul className="space-y-0.5">
-              {navItems.map((item) => {
+              {allowedItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
                 return (

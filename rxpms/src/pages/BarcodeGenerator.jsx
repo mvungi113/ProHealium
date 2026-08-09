@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Printer, Search, Check, Package, Tag, X } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Printer, Search, Check, Package, Tag } from "lucide-react";
 import { useStore } from "../store/appStore";
 import { cn } from "../lib/utils";
 import JsBarcode from "jsbarcode";
 
-function BarcodeLabel({ product, showPrice = false }) {
+function BarcodeLabel({ product }) {
   const svgRef = useRef(null);
 
   useEffect(() => {
@@ -38,7 +38,6 @@ export default function BarcodeGenerator() {
   const [selected, setSelected] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [search, setSearch] = useState("");
-  const [labelSize, setLabelSize] = useState("medium");
 
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||

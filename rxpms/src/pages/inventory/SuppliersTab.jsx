@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Truck, X, RefreshCw, Mail, Phone, MapPin } from "lucide-react";
+import { Plus, Pencil, Trash2, Truck, X, RefreshCw, Mail, Phone } from "lucide-react";
 import api from "../../lib/api";
 
 const emptySupplier = { name: "", contact_person: "", phone: "", email: "", address: "", notes: "" };

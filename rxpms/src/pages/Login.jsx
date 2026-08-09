@@ -8,8 +8,8 @@ import { useStore } from "../store/appStore";
 import api from "../lib/api";
 
 export default function Login() {
-  const [email, setEmail] = useState("admin@prohealium.com");
-  const [password, setPassword] = useState("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const login = useStore((state) => state.login);
@@ -26,7 +26,7 @@ export default function Login() {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Invalid credentials. Try admin@prohealium.com / password"
+          "Invalid email or password. Please try again."
       );
     }
   };
@@ -94,8 +94,7 @@ export default function Login() {
         </form>
 
         <div className="mt-6 text-center text-xs text-slate-400">
-          Use <span className="font-medium text-slate-600">admin@prohealium.com</span> /{" "}
-          <span className="font-medium text-slate-600">password</span>
+          Contact your administrator for login credentials.
         </div>
       </div>
     </div>

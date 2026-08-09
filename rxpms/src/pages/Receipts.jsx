@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { Eye, Search, CheckCircle, AlertTriangle, Printer, X, FileText, Filter, RefreshCw, DollarSign, ShoppingCart, Clock, ArrowUpDown } from "lucide-react";
-import { formatCurrency, cn } from "../lib/utils";
+import { Eye, Search, CheckCircle, AlertTriangle, Printer, X, FileText, Filter, RefreshCw, DollarSign, ShoppingCart, Clock } from "lucide-react";
+import { formatCurrency } from "../lib/utils";
 import { Badge } from "../components/ui/Badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
+import { Card, CardContent } from "../components/ui/Card";
 import Pagination from "../components/ui/Pagination";
-import Receipt from "../components/pos/Receipt";
 import api from "../lib/api";
 
-function ReceiptDetailModal({ receipt, onClose }) {
+function ReceiptDetailModal({ receipt, onClose, taxRate = 10 }) {
   if (!receipt) return null;
+  const taxMultiplier = taxRate / 100;
 
   const handlePrint = () => {
     const items = (receipt.sale_items || receipt.saleItems || receipt.items || [])
@@ -21,7 +21,7 @@ function ReceiptDetailModal({ receipt, onClose }) {
       )
       .join("");
 
-    const subtotal = Number(receipt.amount || receipt.total || 0) / 1.1;
+    const subtotal = Number(receipt.amount || receipt.total || 0) / (1 + taxMultiplier);
     const tax = Number(receipt.amount || receipt.total || 0) - subtotal;
 
     const html = `<!DOCTYPE html>
@@ -53,7 +53,7 @@ function ReceiptDetailModal({ receipt, onClose }) {
   ${items}
   <div class="divider">--------------------------------</div>
   <div class="row"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
-  <div class="row"><span>Tax (10%):</span><span>$${tax.toFixed(2)}</span></div>
+  <div class="row"><span>Tax (${taxRate}%):</span><span>$${tax.toFixed(2)}</span></div>
   <div class="divider">================================</div>
   <div class="row total"><span>TOTAL:</span><span>$${Number(receipt.amount || receipt.total).toFixed(2)}</span></div>
   <div class="divider">================================</div>
@@ -73,7 +73,7 @@ function ReceiptDetailModal({ receipt, onClose }) {
   };
 
   const saleItems = receipt.sale_items || receipt.saleItems || receipt.items || [];
-  const subtotal = Number(receipt.amount || receipt.total || 0) / 1.1;
+  const subtotal = Number(receipt.amount || receipt.total || 0) / (1 + taxMultiplier);
   const tax = Number(receipt.amount || receipt.total || 0) - subtotal;
 
   return (
@@ -123,7 +123,7 @@ function ReceiptDetailModal({ receipt, onClose }) {
             <div className="text-center text-[10px] text-slate-400">--------------------------------</div>
             <div className="space-y-1">
               <div className="flex justify-between"><span className="text-slate-500">Subtotal:</span><span>{formatCurrency(subtotal)}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Tax (10%):</span><span>{formatCurrency(tax)}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Tax ({taxRate}%):</span><span>{formatCurrency(tax)}</span></div>
               <div className="text-center text-[10px] text-slate-400">================================</div>
               <div className="flex justify-between text-[15px] font-bold"><span>TOTAL:</span><span>{formatCurrency(receipt.amount || receipt.total)}</span></div>
               <div className="text-center text-[10px] text-slate-400">================================</div>
@@ -165,6 +165,7 @@ export default function Receipts() {
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState(null);
+  const [taxRate, setTaxRate] = useState(10);
 
   const fetchSales = async (pageNum = 1) => {
     setLoading(true);
@@ -182,6 +183,9 @@ export default function Receipts() {
 
   useEffect(() => {
     fetchSales(page);
+    api.get("/settings").then((res) => {
+      if (res.data.tax_rate) setTaxRate(parseFloat(res.data.tax_rate));
+    }).catch(() => {});
   }, [page]);
 
   const filtered = sales.filter((sale) => {
@@ -383,7 +387,7 @@ export default function Receipts() {
       )}
 
       {selectedReceipt && (
-        <ReceiptDetailModal receipt={selectedReceipt} onClose={() => setSelectedReceipt(null)} />
+        <ReceiptDetailModal receipt={selectedReceipt} onClose={() => setSelectedReceipt(null)} taxRate={taxRate} />
       )}
     </div>
   );

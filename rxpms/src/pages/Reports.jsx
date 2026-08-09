@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { BarChart3, Download, RefreshCw, TrendingUp, Package, DollarSign } from "lucide-react";
+import { Download, RefreshCw, TrendingUp, Package, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Label } from "../components/ui/Label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import api from "../lib/api";
 import { formatCurrency, cn } from "../lib/utils";
 
@@ -166,7 +166,7 @@ function SalesReport({ data }) {
 }
 
 function FinancialReport({ data }) {
-  const { revenue, orders, cash_sales, card_sales, daily, refunds, net_revenue } = data;
+  const { revenue, cash_sales, card_sales, daily, refunds, net_revenue } = data;
 
   return (
     <div className="space-y-6">

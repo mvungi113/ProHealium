@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { RotateCcw, RefreshCw, X, Search, DollarSign, Clock, CheckCircle, Package, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import { RotateCcw, RefreshCw, X, Search, DollarSign, Clock, CheckCircle, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import api from "../lib/api";
 import { formatCurrency, cn } from "../lib/utils";
 
