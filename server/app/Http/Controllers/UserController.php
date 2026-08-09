@@ -11,9 +11,21 @@ class UserController extends Controller
 {
     use LogsActivity;
 
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(User::latest()->get());
+        $query = User::query();
+
+        if ($request->filled('search')) {
+            $q = $request->search;
+            $query->where(function ($qr) use ($q) {
+                $qr->where('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('role', 'like', "%{$q}%");
+            });
+        }
+
+        $perPage = $request->get('per_page', 15);
+        return response()->json($query->latest()->paginate($perPage));
     }
 
     public function show(User $user)

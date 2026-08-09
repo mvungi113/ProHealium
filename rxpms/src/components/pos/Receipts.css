@@ -1,0 +1,135 @@
+.receipt-container {
+  width: 286px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #000;
+  background: #fff;
+  padding: 8px 4px;
+}
+
+.receipt-header {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.receipt-pharmacy-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.receipt-subtext {
+  font-size: 10px;
+  color: #444;
+}
+
+.receipt-divider {
+  text-align: center;
+  margin: 4px 0;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.receipt-info {
+  margin-bottom: 2px;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.receipt-items-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.receipt-item {
+  margin-bottom: 2px;
+}
+
+.receipt-item-name {
+  font-weight: 600;
+}
+
+.receipt-item-detail {
+  text-align: right;
+  font-size: 10px;
+}
+
+.receipt-totals {
+  margin-top: 2px;
+}
+
+.receipt-total {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 0;
+}
+
+.receipt-footer {
+  text-align: center;
+  margin-top: 4px;
+  font-size: 10px;
+}
+
+.receipt-offline-badge {
+  margin-top: 4px;
+  padding: 2px 4px;
+  border: 1px dashed #000;
+  text-align: center;
+  font-weight: 700;
+  font-size: 9px;
+}
+
+/* Print-only page */
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 2mm;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .receipt-container {
+    width: 100% !important;
+    max-width: 80mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 10pt !important;
+    line-height: 1.3 !important;
+    background: #fff !important;
+  }
+
+  .receipt-pharmacy-name {
+    font-size: 13pt !important;
+  }
+
+  .receipt-subtext {
+    font-size: 8pt !important;
+  }
+
+  .receipt-divider {
+    font-size: 8pt !important;
+    margin: 2mm 0 !important;
+  }
+
+  .receipt-total {
+    font-size: 11pt !important;
+  }
+
+  .receipt-footer {
+    font-size: 8pt !important;
+  }
+
+  .receipt-offline-badge {
+    font-size: 7pt !important;
+  }
+}

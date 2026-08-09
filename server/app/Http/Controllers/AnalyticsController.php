@@ -12,6 +12,8 @@ class AnalyticsController extends Controller
     public function index(Request $request)
     {
         $period = $request->get('period', 'month');
+        $txPage = $request->get('tx_page', 1);
+        $txPerPage = $request->get('tx_per_page', 10);
 
         $salesQuery = Sale::where('status', 'Completed');
         $previousSalesQuery = Sale::where('status', 'Completed');
@@ -50,7 +52,7 @@ class AnalyticsController extends Controller
         $monthly = $this->getMonthlyData($period);
         $dailySales = $this->getDailySales($period);
         $topProducts = $this->getTopProducts($period);
-        $transactions = $this->getTransactions($period);
+        $transactions = $this->getTransactions($period, $txPage, $txPerPage);
         $categoryPerformance = $this->getCategoryPerformance($period);
         $paymentBreakdown = $this->getPaymentBreakdown($period);
         $hourlySales = $this->getHourlySales($period);
@@ -164,15 +166,14 @@ class AnalyticsController extends Controller
             ->get();
     }
 
-    private function getTransactions(string $period)
+    private function getTransactions(string $period, int $page = 1, int $perPage = 10)
     {
         $start = $this->getPeriodStart($period);
 
         return Sale::with('saleItems')
             ->where('created_at', '>=', $start)
             ->latest()
-            ->take(20)
-            ->get();
+            ->paginate($perPage, ['*'], 'page', $page);
     }
 
     private function getCategoryPerformance(string $period)

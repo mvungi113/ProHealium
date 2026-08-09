@@ -25,7 +25,8 @@ class ProductController extends Controller
             $query->where('category', $request->category);
         }
 
-        return response()->json($query->latest()->get());
+        $perPage = $request->get('per_page', 15);
+        return response()->json($query->latest()->paginate($perPage));
     }
 
     public function store(Request $request)
