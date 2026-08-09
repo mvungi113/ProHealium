@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class NotificationController extends Controller
 {
@@ -30,20 +31,27 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request)
     {
-        Notification::where('user_id', $request->user()->id)->where('is_read', false)->update(['is_read' => true]);
+        Notification::where(function ($q) use ($request) {
+            $q->where('user_id', $request->user()->id)->orWhereNull('user_id');
+        })->where('is_read', false)->update(['is_read' => true]);
         return response()->json(['message' => 'All marked as read']);
     }
 
-    public function checkAlerts()
+    public function checkAlerts(Request $request)
     {
         $products = Product::all();
         $created = 0;
+        $userId = $request->user()?->id;
 
-        $lowStock = $products->filter(fn($p) => $p->quantity <= $p->reorderLevel && $p->quantity > 0);
+        $lowStock = $products->filter(fn($p) => $p->quantity <= $p->reorder_level && $p->quantity > 0);
         foreach ($lowStock as $p) {
-            $exists = Notification::where('type', 'low_stock')->where('data->product_id', $p->id)->whereDate('created_at', today())->exists();
+            $exists = Notification::where('type', 'low_stock')
+                ->whereRaw("json_extract(data, '$.product_id') = ?", [$p->id])
+                ->whereDate('created_at', today())
+                ->exists();
             if (!$exists) {
                 Notification::create([
+                    'user_id' => $userId,
                     'type' => 'low_stock',
                     'title' => 'Low Stock Alert',
                     'message' => "{$p->name} has only {$p->quantity} units left (reorder at {$p->reorder_level})",
@@ -53,11 +61,15 @@ class NotificationController extends Controller
             }
         }
 
-        $expiring = $products->filter(fn($p) => $p->expiry_date && \Carbon\Carbon::parse($p->expiry_date)->diffInDays(now()) <= 30 && \Carbon\Carbon::parse($p->expiry_date)->isFuture());
+        $expiring = $products->filter(fn($p) => $p->expiry_date && Carbon::parse($p->expiry_date)->diffInDays(now()) <= 30 && Carbon::parse($p->expiry_date)->isFuture());
         foreach ($expiring as $p) {
-            $exists = Notification::where('type', 'expiry')->where('data->product_id', $p->id)->whereDate('created_at', today())->exists();
+            $exists = Notification::where('type', 'expiry')
+                ->whereRaw("json_extract(data, '$.product_id') = ?", [$p->id])
+                ->whereDate('created_at', today())
+                ->exists();
             if (!$exists) {
                 Notification::create([
+                    'user_id' => $userId,
                     'type' => 'expiry',
                     'title' => 'Expiry Alert',
                     'message' => "{$p->name} expires on {$p->expiry_date}",
@@ -67,6 +79,6 @@ class NotificationController extends Controller
             }
         }
 
-        return response()->json(['message' => "Created {$created} new alerts"]);
+        return response()->json(['message' => "Created {$created} new alerts", 'created' => $created]);
     }
 }

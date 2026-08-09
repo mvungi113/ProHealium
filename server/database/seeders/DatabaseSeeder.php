@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\SaleItem;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -69,19 +70,82 @@ class DatabaseSeeder extends Seeder
         }
 
         if (Sale::count() === 0) {
-            $sales = [
-                ['invoice' => 'INV-001', 'customer' => 'John Doe', 'amount' => 45.50, 'items' => 3, 'status' => 'Completed', 'payment_method' => 'cash'],
-                ['invoice' => 'INV-002', 'customer' => 'Jane Smith', 'amount' => 78.25, 'items' => 5, 'status' => 'Completed', 'payment_method' => 'card'],
-                ['invoice' => 'INV-003', 'customer' => 'Mike Johnson', 'amount' => 23.99, 'items' => 2, 'status' => 'Completed', 'payment_method' => 'cash'],
-                ['invoice' => 'INV-004', 'customer' => 'Sarah Lee', 'amount' => 112.00, 'items' => 8, 'status' => 'Pending', 'payment_method' => 'card'],
-                ['invoice' => 'INV-005', 'customer' => 'David Brown', 'amount' => 56.75, 'items' => 4, 'status' => 'Completed', 'payment_method' => 'cash'],
-                ['invoice' => 'INV-006', 'customer' => 'Walk-in Customer', 'amount' => 89.40, 'items' => 6, 'status' => 'Completed', 'payment_method' => 'card'],
-                ['invoice' => 'INV-007', 'customer' => 'Emily Davis', 'amount' => 34.20, 'items' => 2, 'status' => 'Completed', 'payment_method' => 'cash'],
-                ['invoice' => 'INV-008', 'customer' => 'Chris Wilson', 'amount' => 156.80, 'items' => 9, 'status' => 'Completed', 'payment_method' => 'card'],
+            $products = Product::all();
+
+            $saleDefinitions = [
+                ['invoice' => 'INV-001', 'customer' => 'John Doe', 'status' => 'Completed', 'payment_method' => 'cash', 'items' => [
+                    ['sku' => 'PCM-500-001', 'qty' => 3],
+                    ['sku' => 'VIT-C-003', 'qty' => 2],
+                    ['sku' => 'ASP-100-007', 'qty' => 1],
+                ]],
+                ['invoice' => 'INV-002', 'customer' => 'Jane Smith', 'status' => 'Completed', 'payment_method' => 'card', 'items' => [
+                    ['sku' => 'AMX-250-002', 'qty' => 2],
+                    ['sku' => 'MTF-500-006', 'qty' => 1],
+                    ['sku' => 'PCM-500-001', 'qty' => 3],
+                ]],
+                ['invoice' => 'INV-003', 'customer' => 'Mike Johnson', 'status' => 'Completed', 'payment_method' => 'cash', 'items' => [
+                    ['sku' => 'IBU-400-004', 'qty' => 2],
+                    ['sku' => 'CTZ-10-005', 'qty' => 1],
+                ]],
+                ['invoice' => 'INV-004', 'customer' => 'Sarah Lee', 'status' => 'Completed', 'payment_method' => 'card', 'items' => [
+                    ['sku' => 'AMX-250-002', 'qty' => 4],
+                    ['sku' => 'MTF-500-006', 'qty' => 2],
+                    ['sku' => 'PCM-500-001', 'qty' => 2],
+                ]],
+                ['invoice' => 'INV-005', 'customer' => 'David Brown', 'status' => 'Completed', 'payment_method' => 'cash', 'items' => [
+                    ['sku' => 'VIT-C-003', 'qty' => 4],
+                    ['sku' => 'LOR-10-008', 'qty' => 2],
+                ]],
+                ['invoice' => 'INV-006', 'customer' => 'Walk-in Customer', 'status' => 'Completed', 'payment_method' => 'card', 'items' => [
+                    ['sku' => 'ASP-100-007', 'qty' => 6],
+                    ['sku' => 'IBU-400-004', 'qty' => 3],
+                    ['sku' => 'PCM-500-001', 'qty' => 3],
+                ]],
+                ['invoice' => 'INV-007', 'customer' => 'Emily Davis', 'status' => 'Completed', 'payment_method' => 'cash', 'items' => [
+                    ['sku' => 'CTZ-10-005', 'qty' => 2],
+                    ['sku' => 'VIT-C-003', 'qty' => 2],
+                ]],
+                ['invoice' => 'INV-008', 'customer' => 'Chris Wilson', 'status' => 'Completed', 'payment_method' => 'card', 'items' => [
+                    ['sku' => 'AMX-250-002', 'qty' => 5],
+                    ['sku' => 'MTF-500-006', 'qty' => 3],
+                    ['sku' => 'PCM-500-001', 'qty' => 1],
+                ]],
             ];
 
-            foreach ($sales as $sale) {
-                Sale::create(array_merge($sale, ['user_id' => 1]));
+            foreach ($saleDefinitions as $def) {
+                $totalAmount = 0;
+                $totalItems = 0;
+                $saleItems = [];
+
+                foreach ($def['items'] as $item) {
+                    $product = $products->firstWhere('sku', $item['sku']);
+                    if ($product) {
+                        $subtotal = $product->unit_price * $item['qty'];
+                        $totalAmount += $subtotal;
+                        $totalItems += $item['qty'];
+                        $saleItems[] = [
+                            'product_id' => $product->id,
+                            'product_name' => $product->name,
+                            'quantity' => $item['qty'],
+                            'unit_price' => $product->unit_price,
+                            'subtotal' => $subtotal,
+                        ];
+                    }
+                }
+
+                $sale = Sale::create([
+                    'invoice' => $def['invoice'],
+                    'customer' => $def['customer'],
+                    'amount' => $totalAmount,
+                    'items' => $totalItems,
+                    'status' => $def['status'],
+                    'payment_method' => $def['payment_method'],
+                    'user_id' => 1,
+                ]);
+
+                foreach ($saleItems as $si) {
+                    SaleItem::create(array_merge($si, ['sale_id' => $sale->id]));
+                }
             }
         }
     }
