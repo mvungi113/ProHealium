@@ -61,7 +61,7 @@ class NotificationController extends Controller
             }
         }
 
-        $expiring = $products->filter(fn($p) => $p->expiry_date && Carbon::parse($p->expiry_date)->diffInDays(now()) <= 30 && Carbon::parse($p->expiry_date)->isFuture());
+        $expiring = $products->filter(fn($p) => $p->expiry_date && Carbon::parse($p->expiry_date)->isFuture() && now()->diffInDays(Carbon::parse($p->expiry_date)) <= 30);
         foreach ($expiring as $p) {
             $exists = Notification::where('type', 'expiry')
                 ->whereRaw("json_extract(data, '$.product_id') = ?", [$p->id])

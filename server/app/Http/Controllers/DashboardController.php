@@ -16,11 +16,9 @@ class DashboardController extends Controller
         $totalSales = Sale::where('status', 'Completed')->sum('amount');
         $totalOrders = Sale::count();
         $productsInStock = $products->sum('quantity');
-        $lowStockItems = $products->where('quantity', '<=', 'reorder_level')->where('quantity', '>', 0)->count();
+        $lowStockItems = $products->filter(fn($p) => $p->quantity <= $p->reorder_level && $p->quantity > 0)->count();
         $outOfStock = $products->where('quantity', '<=', 0)->count();
-        $expiringItems = $products->filter(function ($p) {
-            return now()->diffInDays($p->expiry_date, false) <= 90;
-        })->count();
+        $expiringItems = $products->filter(fn($p) => $p->expiry_date && \Carbon\Carbon::parse($p->expiry_date)->isFuture() && now()->diffInDays(\Carbon\Carbon::parse($p->expiry_date)) <= 90)->count();
 
         $weeklySales = Sale::selectRaw('strftime("%w", created_at) as day, SUM(amount) as total')
             ->where('status', 'Completed')
@@ -36,10 +34,8 @@ class DashboardController extends Controller
                 return ['name' => $key, 'value' => $group->sum('quantity')];
             })->values();
 
-        $lowStockProducts = $products->where('quantity', '<=', 'reorder_level')->take(3)->values();
-        $expiringProducts = $products->filter(function ($p) {
-            return now()->diffInDays($p->expiry_date, false) <= 90;
-        })->take(2)->values();
+        $lowStockProducts = $products->filter(fn($p) => $p->quantity <= $p->reorder_level && $p->quantity > 0)->take(3)->values();
+        $expiringProducts = $products->filter(fn($p) => $p->expiry_date && \Carbon\Carbon::parse($p->expiry_date)->isFuture() && now()->diffInDays(\Carbon\Carbon::parse($p->expiry_date)) <= 90)->take(2)->values();
 
         return response()->json([
             'stats' => [
