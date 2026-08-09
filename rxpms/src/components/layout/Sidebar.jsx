@@ -2,7 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, Package, BarChart3, Users, Settings,
   LogOut, Pill, Activity, UserCircle, AlertTriangle, RotateCcw,
-  ClipboardList, Bell, ReceiptText, Printer,
+  Bell, ReceiptText, Printer,
 } from "lucide-react";
 import { useStore } from "../../store/appStore";
 import { cn } from "../../lib/utils";
@@ -15,7 +15,6 @@ const navItems = [
   { path: "/expiry-alerts", label: "Expiry Alerts", icon: AlertTriangle },
   { path: "/returns", label: "Returns", icon: RotateCcw },
   { path: "/analytics", label: "Analytics", icon: BarChart3 },
-  { path: "/reports", label: "Reports", icon: ClipboardList },
   { path: "/receipts", label: "Receipts", icon: ReceiptText },
   { path: "/users", label: "Users & Roles", icon: Users },
   { path: "/notifications", label: "Alerts", icon: Bell },

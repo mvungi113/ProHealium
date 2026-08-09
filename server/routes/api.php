@@ -50,6 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reports/inventory', [ReportController::class, 'inventory']);
     Route::get('/reports/financial', [ReportController::class, 'financial']);
 
+    Route::get('/export/{type}', [\App\Http\Controllers\ExportController::class, 'export']);
+
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);

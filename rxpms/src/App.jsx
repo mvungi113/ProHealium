@@ -12,7 +12,6 @@ import ActivityLog from "./pages/ActivityLog";
 import Customers from "./pages/Customers";
 import ExpiryAlerts from "./pages/ExpiryAlerts";
 import Returns from "./pages/Returns";
-import Reports from "./pages/Reports";
 import Receipts from "./pages/Receipts";
 import Notifications from "./pages/Notifications";
 import BarcodeGenerator from "./pages/BarcodeGenerator";
@@ -66,7 +65,6 @@ function App() {
         <Route path="/expiry-alerts" element={<ProtectedRoute><ExpiryAlerts /></ProtectedRoute>} />
         <Route path="/returns" element={<ProtectedRoute><Returns /></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-        <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
         <Route path="/receipts" element={<ProtectedRoute><Receipts /></ProtectedRoute>} />
         <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
