@@ -288,7 +288,7 @@ This project is open source and available under the [MIT License](LICENSE).
 **ROGASIAN HAJI**
 
 - Email: rogashianmvungi@gmail.com
-- GitHub: [Your GitHub Profile](https://github.com/yourusername)
+- GitHub: [Your GitHub Profile](https://github.com/mvungi113)
 
 ---
 
