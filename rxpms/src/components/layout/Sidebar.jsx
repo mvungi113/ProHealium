@@ -2,7 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, Package, BarChart3, Users, Settings,
   LogOut, Pill, Activity, UserCircle, AlertTriangle, RotateCcw,
-  Bell, ReceiptText, Printer,
+  ReceiptText, Printer,
 } from "lucide-react";
 import { useStore } from "../../store/appStore";
 import { cn } from "../../lib/utils";
@@ -17,7 +17,6 @@ const navItems = [
   { path: "/analytics", label: "Analytics", icon: BarChart3 },
   { path: "/receipts", label: "Receipts", icon: ReceiptText },
   { path: "/users", label: "Users & Roles", icon: Users },
-  { path: "/notifications", label: "Alerts", icon: Bell },
   { path: "/activity-log", label: "Activity Log", icon: Activity },
   { path: "/barcodes", label: "Barcodes", icon: Printer },
   { path: "/settings", label: "Settings", icon: Settings },

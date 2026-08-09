@@ -20,6 +20,20 @@ function getCategoryStyle(category) {
   return CATEGORY_COLORS[category] || { bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200", accent: "from-slate-500 to-slate-600" };
 }
 
+const PAYMENT_ICONS = {
+  cash: Banknote,
+  card: CreditCard,
+  mobile_money: CreditCard,
+  insurance: CreditCard,
+};
+
+const PAYMENT_LABELS = {
+  cash: "Cash",
+  card: "Card",
+  mobile_money: "Mobile Money",
+  insurance: "Insurance",
+};
+
 export default function POS() {
   const products = useStore((state) => state.products);
   const fetchProducts = useStore((state) => state.fetchProducts);
@@ -49,7 +63,12 @@ export default function POS() {
   const [customerName, setCustomerName] = useState("");
   const [activeReceipt, setActiveReceipt] = useState(null);
   const [addedProductId, setAddedProductId] = useState(null);
+  const [settings, setSettings] = useState({ tax_rate: "10", currency: "USD ($)", payment_methods: "Cash,Card" });
   const barcodeRef = useRef(null);
+
+  useEffect(() => {
+    api.get("/settings").then((res) => setSettings((prev) => ({ ...prev, ...res.data }))).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handleOnline = () => setOnline(true);
@@ -116,9 +135,11 @@ export default function POS() {
   });
 
   const subtotal = cart.reduce((sum, item) => sum + Number(item.unitPrice) * item.quantity, 0);
-  const tax = subtotal * 0.1;
+  const taxRate = parseFloat(settings.tax_rate) || 0;
+  const tax = subtotal * (taxRate / 100);
   const total = subtotal + tax;
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const enabledPayments = (settings.payment_methods || "Cash,Card").split(",").filter(Boolean);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -449,7 +470,7 @@ export default function POS() {
                   <span className="font-medium">{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-slate-500">
-                  <span>Tax (10%)</span>
+                  <span>Tax ({taxRate}%)</span>
                   <span className="font-medium">{formatCurrency(tax)}</span>
                 </div>
                 <div className="h-px bg-slate-100" />
@@ -461,22 +482,21 @@ export default function POS() {
 
               {/* Payment Method */}
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => setPaymentMethod("cash")}
-                  className={`flex items-center justify-center gap-2 rounded-xl border-2 py-2.5 text-xs font-bold transition-all ${
-                    paymentMethod === "cash"
-                      ? "border-primary bg-primary text-white shadow-md shadow-primary/25"
-                      : "border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
-                  }`}>
-                  <Banknote className="h-4 w-4" /> Cash
-                </button>
-                <button onClick={() => setPaymentMethod("card")}
-                  className={`flex items-center justify-center gap-2 rounded-xl border-2 py-2.5 text-xs font-bold transition-all ${
-                    paymentMethod === "card"
-                      ? "border-primary bg-primary text-white shadow-md shadow-primary/25"
-                      : "border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
-                  }`}>
-                  <CreditCard className="h-4 w-4" /> Card
-                </button>
+                {enabledPayments.map((method) => {
+                  const key = method.toLowerCase().replace(/\s+/g, "_");
+                  const Icon = PAYMENT_ICONS[key] || CreditCard;
+                  const label = PAYMENT_LABELS[key] || method;
+                  return (
+                    <button key={key} onClick={() => setPaymentMethod(key)}
+                      className={`flex items-center justify-center gap-2 rounded-xl border-2 py-2.5 text-xs font-bold transition-all ${
+                        paymentMethod === key
+                          ? "border-primary bg-primary text-white shadow-md shadow-primary/25"
+                          : "border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                      }`}>
+                      <Icon className="h-4 w-4" /> {label}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Customer */}

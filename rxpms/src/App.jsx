@@ -13,7 +13,6 @@ import Customers from "./pages/Customers";
 import ExpiryAlerts from "./pages/ExpiryAlerts";
 import Returns from "./pages/Returns";
 import Receipts from "./pages/Receipts";
-import Notifications from "./pages/Notifications";
 import BarcodeGenerator from "./pages/BarcodeGenerator";
 import { useStore } from "./store/appStore";
 import api from "./lib/api";
@@ -67,7 +66,6 @@ function App() {
         <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
         <Route path="/receipts" element={<ProtectedRoute><Receipts /></ProtectedRoute>} />
         <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/activity-log" element={<ProtectedRoute><ActivityLog /></ProtectedRoute>} />
         <Route path="/barcodes" element={<ProtectedRoute><BarcodeGenerator /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

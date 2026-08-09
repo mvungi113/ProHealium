@@ -73,39 +73,39 @@ class DatabaseSeeder extends Seeder
             $products = Product::all();
 
             $saleDefinitions = [
-                ['invoice' => 'INV-001', 'customer' => 'John Doe', 'status' => 'Completed', 'payment_method' => 'cash', 'items' => [
+                ['invoice' => 'INV-001', 'customer' => 'John Doe', 'status' => 'Completed', 'payment_method' => 'cash', 'day_offset' => -6, 'items' => [
                     ['sku' => 'PCM-500-001', 'qty' => 3],
                     ['sku' => 'VIT-C-003', 'qty' => 2],
                     ['sku' => 'ASP-100-007', 'qty' => 1],
                 ]],
-                ['invoice' => 'INV-002', 'customer' => 'Jane Smith', 'status' => 'Completed', 'payment_method' => 'card', 'items' => [
+                ['invoice' => 'INV-002', 'customer' => 'Jane Smith', 'status' => 'Completed', 'payment_method' => 'card', 'day_offset' => -5, 'items' => [
                     ['sku' => 'AMX-250-002', 'qty' => 2],
                     ['sku' => 'MTF-500-006', 'qty' => 1],
                     ['sku' => 'PCM-500-001', 'qty' => 3],
                 ]],
-                ['invoice' => 'INV-003', 'customer' => 'Mike Johnson', 'status' => 'Completed', 'payment_method' => 'cash', 'items' => [
+                ['invoice' => 'INV-003', 'customer' => 'Mike Johnson', 'status' => 'Completed', 'payment_method' => 'cash', 'day_offset' => -4, 'items' => [
                     ['sku' => 'IBU-400-004', 'qty' => 2],
                     ['sku' => 'CTZ-10-005', 'qty' => 1],
                 ]],
-                ['invoice' => 'INV-004', 'customer' => 'Sarah Lee', 'status' => 'Completed', 'payment_method' => 'card', 'items' => [
+                ['invoice' => 'INV-004', 'customer' => 'Sarah Lee', 'status' => 'Completed', 'payment_method' => 'card', 'day_offset' => -3, 'items' => [
                     ['sku' => 'AMX-250-002', 'qty' => 4],
                     ['sku' => 'MTF-500-006', 'qty' => 2],
                     ['sku' => 'PCM-500-001', 'qty' => 2],
                 ]],
-                ['invoice' => 'INV-005', 'customer' => 'David Brown', 'status' => 'Completed', 'payment_method' => 'cash', 'items' => [
+                ['invoice' => 'INV-005', 'customer' => 'David Brown', 'status' => 'Completed', 'payment_method' => 'cash', 'day_offset' => -2, 'items' => [
                     ['sku' => 'VIT-C-003', 'qty' => 4],
                     ['sku' => 'LOR-10-008', 'qty' => 2],
                 ]],
-                ['invoice' => 'INV-006', 'customer' => 'Walk-in Customer', 'status' => 'Completed', 'payment_method' => 'card', 'items' => [
+                ['invoice' => 'INV-006', 'customer' => 'Walk-in Customer', 'status' => 'Completed', 'payment_method' => 'card', 'day_offset' => -1, 'items' => [
                     ['sku' => 'ASP-100-007', 'qty' => 6],
                     ['sku' => 'IBU-400-004', 'qty' => 3],
                     ['sku' => 'PCM-500-001', 'qty' => 3],
                 ]],
-                ['invoice' => 'INV-007', 'customer' => 'Emily Davis', 'status' => 'Completed', 'payment_method' => 'cash', 'items' => [
+                ['invoice' => 'INV-007', 'customer' => 'Emily Davis', 'status' => 'Completed', 'payment_method' => 'cash', 'day_offset' => 0, 'items' => [
                     ['sku' => 'CTZ-10-005', 'qty' => 2],
                     ['sku' => 'VIT-C-003', 'qty' => 2],
                 ]],
-                ['invoice' => 'INV-008', 'customer' => 'Chris Wilson', 'status' => 'Completed', 'payment_method' => 'card', 'items' => [
+                ['invoice' => 'INV-008', 'customer' => 'Chris Wilson', 'status' => 'Completed', 'payment_method' => 'card', 'day_offset' => 0, 'items' => [
                     ['sku' => 'AMX-250-002', 'qty' => 5],
                     ['sku' => 'MTF-500-006', 'qty' => 3],
                     ['sku' => 'PCM-500-001', 'qty' => 1],
@@ -133,6 +133,8 @@ class DatabaseSeeder extends Seeder
                     }
                 }
 
+                $createdAt = now()->startOfWeek()->addDays($def['day_offset'] + 7)->addHours(rand(8, 18))->addMinutes(rand(0, 59));
+
                 $sale = Sale::create([
                     'invoice' => $def['invoice'],
                     'customer' => $def['customer'],
@@ -141,10 +143,16 @@ class DatabaseSeeder extends Seeder
                     'status' => $def['status'],
                     'payment_method' => $def['payment_method'],
                     'user_id' => 1,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt,
                 ]);
 
                 foreach ($saleItems as $si) {
-                    SaleItem::create(array_merge($si, ['sale_id' => $sale->id]));
+                    SaleItem::create(array_merge($si, [
+                        'sale_id' => $sale->id,
+                        'created_at' => $createdAt,
+                        'updated_at' => $createdAt,
+                    ]));
                 }
             }
         }

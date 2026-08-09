@@ -28,7 +28,8 @@ import { COLORS } from "../data/mockData";
 import { formatCurrency, getDaysUntilExpiry } from "../lib/utils";
 import api from "../lib/api";
 
-const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAY_MAP = [1, 2, 3, 4, 5, 6, 0];
 
 function StatCard({ title, value, change, icon: Icon, trend }) {
   const isPositive = trend === "up";
@@ -91,7 +92,7 @@ export default function Dashboard() {
 
   const chartData = DAY_NAMES.map((name, index) => ({
     name,
-    sales: weeklySales.find((w) => Number(w.day) === index)?.total || 0,
+    sales: weeklySales.find((w) => Number(w.day) === DAY_MAP[index])?.total || 0,
   }));
 
   const totalCategoryQty = categoryData.reduce((sum, c) => sum + c.value, 0);
@@ -108,6 +109,10 @@ export default function Dashboard() {
         <StatCard title="Total Orders" value={stats.totalOrders} change={8.2} icon={ShoppingBag} trend="up" />
         <StatCard title="Products in Stock" value={stats.productsInStock} change={-3.1} icon={Package} trend="down" />
         <StatCard title="Low Stock Items" value={stats.lowStockItems} change={2.4} icon={AlertTriangle} trend="down" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard title="Out of Stock" value={stats.outOfStock} icon={AlertTriangle} trend={stats.outOfStock === 0 ? "up" : "down"} change={stats.outOfStock === 0 ? 0 : -stats.outOfStock} />
+        <StatCard title="Expiring Soon" value={stats.expiringItems} icon={Calendar} trend={stats.expiringItems === 0 ? "up" : "down"} change={stats.expiringItems === 0 ? 0 : -stats.expiringItems} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
