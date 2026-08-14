@@ -28,7 +28,7 @@ services:
       - key: DB_SSLMODE
         value: require
       - key: DB_NEON_ENDPOINT
-        value: ep-shiny-paper-ayyttb1n
+        value: ep-shiny-paper-ayyttb1n-pooler
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_STORE

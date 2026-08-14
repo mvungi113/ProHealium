@@ -8,14 +8,6 @@ class NeonPostgresConnector extends PostgresConnector
 {
     protected function getDsn(array $config)
     {
-        $dsn = parent::getDsn($config);
-
-        $endpoint = $config['neon_endpoint'] ?? null;
-
-        if ($endpoint && !str_contains($dsn, 'options=')) {
-            $dsn .= ';options=endpoint=' . $endpoint;
-        }
-
-        return $dsn;
+        return parent::getDsn($config);
     }
 }
