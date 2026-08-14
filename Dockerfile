@@ -23,7 +23,8 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 COPY server .
 
-RUN php artisan key:generate --force \
+RUN cp .env.example .env \
+    && php artisan key:generate --force \
     && mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
     && chmod -R 775 storage bootstrap/cache
