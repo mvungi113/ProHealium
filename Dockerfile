@@ -23,14 +23,11 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 COPY server .
 
-RUN cp .env.example .env \
-    && php artisan key:generate --force \
-    && grep APP_KEY .env > /tmp/app_key_only \
-    && rm -f .env \
+RUN rm -f .env \
     && mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
     && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "cp /tmp/app_key_only .env && php artisan migrate --force 2>&1 && php artisan serve --host=0.0.0.0 --port=8000 2>&1"]
+CMD ["sh", "-c", "touch .env && php artisan key:generate --force 2>/dev/null; php artisan migrate --force 2>&1 && php artisan serve --host=0.0.0.0 --port=8000 2>&1"]
