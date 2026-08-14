@@ -30,4 +30,4 @@ RUN rm -f .env \
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "echo 'APP_KEY=' > .env && php artisan key:generate --force 2>/dev/null; php artisan migrate --force 2>&1 && php artisan serve --host=0.0.0.0 --port=8000 2>&1"]
+CMD ["sh", "-c", "echo 'APP_KEY=' > .env && php artisan key:generate --force 2>/dev/null; php artisan migrate --force 2>&1 && php artisan db:seed --force 2>&1; php artisan serve --host=0.0.0.0 --port=8000 2>&1"]

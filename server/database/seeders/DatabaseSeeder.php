@@ -29,11 +29,6 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
         $products = [
             ['name' => 'Paracetamol 500mg', 'category' => 'Pain Relief', 'sku' => 'PCM-500-001', 'quantity' => 120, 'unit_price' => 5.99, 'expiry_date' => '2026-12-31', 'supplier' => 'MediPlus Ltd', 'reorder_level' => 30],
             ['name' => 'Amoxicillin 250mg', 'category' => 'Antibiotics', 'sku' => 'AMX-250-002', 'quantity' => 45, 'unit_price' => 12.50, 'expiry_date' => '2025-09-15', 'supplier' => 'PharmaCo Inc', 'reorder_level' => 25],
