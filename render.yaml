@@ -1,9 +1,6 @@
 services:
   - type: web
     name: prohealium-api
-    runtime: image
-    image:
-      url: # Render will build from Dockerfile
     dockerfilePath: Dockerfile
     envVars:
       - key: APP_NAME
