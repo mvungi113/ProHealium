@@ -25,10 +25,12 @@ COPY server .
 
 RUN cp .env.example .env \
     && php artisan key:generate --force \
+    && grep APP_KEY .env > /tmp/app_key_only \
+    && rm -f .env \
     && mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
     && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "php artisan migrate --force 2>&1 && php artisan serve --host=0.0.0.0 --port=8000 2>&1"]
+CMD ["sh", "-c", "cp /tmp/app_key_only .env && php artisan migrate --force 2>&1 && php artisan serve --host=0.0.0.0 --port=8000 2>&1"]
