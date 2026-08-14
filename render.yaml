@@ -1,10 +1,10 @@
 services:
   - type: web
     name: prohealium-api
-    runtime: php
-    rootDir: server
-    buildCommand: composer install --no-dev --optimize-autoloader && php artisan config:cache && php artisan route:cache && php artisan view:cache
-    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    runtime: image
+    image:
+      url: # Render will build from Dockerfile
+    dockerfilePath: Dockerfile
     envVars:
       - key: APP_NAME
         value: ProHealium RxPMS
@@ -13,30 +13,28 @@ services:
       - key: APP_DEBUG
         value: "false"
       - key: APP_URL
-        generateValue: true
+        value: https://prohealium.onrender.com
       - key: APP_KEY
         generateValue: true
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        sync: false
+        value: ep-shiny-paper-ayyttb1n-pooler.c-5.us-east-2.aws.neon.tech
       - key: DB_PORT
         value: "5432"
       - key: DB_DATABASE
-        sync: false
+        value: neondb
       - key: DB_USERNAME
-        sync: false
+        value: neondb_owner
       - key: DB_PASSWORD
-        sync: false
+        value: npg_lgVh1XwSEv8J
       - key: DB_SSLMODE
         value: require
       - key: DB_NEON_ENDPOINT
-        sync: false
+        value: ep-shiny-paper-ayyttb1n-pooler
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_STORE
-        value: database
+        value: file
       - key: QUEUE_CONNECTION
-        value: database
-      - key: FRONTEND_URL
-        value: "*"
+        value: sync

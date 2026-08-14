@@ -1,0 +1,9 @@
+node_modules
+rxpms/node_modules
+rxpms/dist
+.git
+.github
+*.md
+**/.env
+**/.DS_Store
+server/vendor

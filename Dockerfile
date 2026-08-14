@@ -1,0 +1,26 @@
+FROM php:8.2-cli
+
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    unzip \
+    curl \
+    && docker-php-ext-install pdo_pgsql pgsql \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
+
+COPY server/composer.json server/composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+COPY server .
+
+RUN php artisan key:generate --force \
+    && mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p storage/logs \
+    && chmod -R 775 storage bootstrap/cache
+
+EXPOSE 8000
+
+CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"]
