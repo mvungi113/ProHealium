@@ -32,7 +32,7 @@ class SaleController extends Controller
         $validated = $request->validate([
             'customer' => 'nullable|string|max:255',
             'status' => 'required|in:Completed,Refunded,Cancelled',
-            'payment_method' => 'required|in:cash,card',
+            'payment_method' => 'required|in:cash,card,mobile_money,insurance',
         ]);
 
         $sale->update($validated);
@@ -64,7 +64,7 @@ class SaleController extends Controller
     {
         $validated = $request->validate([
             'customer' => 'nullable|string|max:255',
-            'payment_method' => 'required|in:cash,card',
+            'payment_method' => 'required|in:cash,card,mobile_money,insurance',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',

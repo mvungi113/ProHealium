@@ -168,6 +168,7 @@ export default function POS() {
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     setProcessing(true);
+    setError("");
     const invoice = `INV-${String(Date.now()).slice(-6)}`;
     const receiptData = buildReceiptData(invoice);
     saveReceipt(receiptData);
@@ -179,21 +180,20 @@ export default function POS() {
     };
     const itemsForApi = saleData.items;
 
-    clearCart();
-    setCustomerName("");
-    setProcessing(false);
-    setActiveReceipt(receiptData);
-
     if (isOnline) {
-      api.post("/sales", { customer: saleData.customer, payment_method: saleData.payment_method, items: itemsForApi })
-        .then(async (res) => {
-          updateReceiptSyncStatus(invoice, true, res.data.id);
-          await fetchProducts();
-        })
-        .catch(() => {
-          updateReceiptSyncStatus(invoice, false);
-          queueSale(saleData);
-        });
+      try {
+        const res = await api.post("/sales", { customer: saleData.customer, payment_method: saleData.payment_method, items: itemsForApi });
+        updateReceiptSyncStatus(invoice, true, res.data.id);
+        await fetchProducts();
+        clearCart();
+        setCustomerName("");
+        setActiveReceipt(receiptData);
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || "Sale failed";
+        setError(`Sale not recorded: ${msg}`);
+        updateReceiptSyncStatus(invoice, false);
+        queueSale(saleData);
+      }
     } else {
       queueSale(saleData);
       const updatedProducts = products.map((p) => {
@@ -203,7 +203,11 @@ export default function POS() {
       });
       useStore.setState({ products: updatedProducts });
       updateReceiptSyncStatus(invoice, false);
+      clearCart();
+      setCustomerName("");
+      setActiveReceipt(receiptData);
     }
+    setProcessing(false);
   };
 
   const handleNewSale = () => {
