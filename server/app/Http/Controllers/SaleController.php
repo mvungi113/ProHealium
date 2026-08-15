@@ -46,14 +46,12 @@ class SaleController extends Controller
     {
         $invoice = $sale->invoice;
 
-        DB::transaction(function () use ($sale) {
-            foreach ($sale->saleItems as $item) {
-                if ($item->product_id) {
-                    Product::where('id', $item->product_id)->increment('quantity', $item->quantity);
-                }
+        foreach ($sale->saleItems as $item) {
+            if ($item->product_id) {
+                Product::where('id', $item->product_id)->increment('quantity', $item->quantity);
             }
-            $sale->delete();
-        });
+        }
+        $sale->delete();
 
         $this->logActivity('sale_deleted', "Deleted sale: {$invoice}");
 
@@ -70,58 +68,56 @@ class SaleController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        return DB::transaction(function () use ($validated, $request) {
-            $invoice = 'INV-' . str_pad(Sale::count() + 1, 4, '0', STR_PAD_LEFT);
-            $totalAmount = 0;
-            $totalItems = 0;
+        $invoice = 'INV-' . str_pad(Sale::max('id') + 1, 4, '0', STR_PAD_LEFT);
+        $totalAmount = 0;
+        $totalItems = 0;
 
-            $sale = Sale::create([
-                'invoice' => $invoice,
-                'customer' => $validated['customer'] ?? 'Walk-in Customer',
-                'amount' => 0,
-                'items' => 0,
-                'status' => 'Completed',
-                'payment_method' => $validated['payment_method'],
-                'user_id' => $request->user()->id,
-            ]);
+        $sale = Sale::create([
+            'invoice' => $invoice,
+            'customer' => $validated['customer'] ?? 'Walk-in Customer',
+            'amount' => 0,
+            'items' => 0,
+            'status' => 'Completed',
+            'payment_method' => $validated['payment_method'],
+            'user_id' => $request->user()?->id,
+        ]);
 
-            foreach ($validated['items'] as $item) {
-                $product = Product::findOrFail($item['product_id']);
+        foreach ($validated['items'] as $item) {
+            $product = Product::findOrFail($item['product_id']);
 
-                if ($product->quantity < $item['quantity']) {
-                    abort(422, "Not enough stock for {$product->name}");
-                }
-
-                $subtotal = $product->unit_price * $item['quantity'];
-                $totalAmount += $subtotal;
-                $totalItems += $item['quantity'];
-
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $product->unit_price,
-                    'subtotal' => $subtotal,
-                ]);
-
-                $product->decrement('quantity', $item['quantity']);
+            if ($product->quantity < $item['quantity']) {
+                return response()->json(['message' => "Not enough stock for {$product->name}"], 422);
             }
 
-            $sale->update([
-                'amount' => $totalAmount,
-                'items' => $totalItems,
+            $subtotal = $product->unit_price * $item['quantity'];
+            $totalAmount += $subtotal;
+            $totalItems += $item['quantity'];
+
+            SaleItem::create([
+                'sale_id' => $sale->id,
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'quantity' => $item['quantity'],
+                'unit_price' => $product->unit_price,
+                'subtotal' => $subtotal,
             ]);
 
-            $this->logActivity('sale_created', "Created sale: {$invoice} - " . ($validated['customer'] ?? 'Walk-in Customer') . " ($" . number_format($totalAmount, 2) . ")", $sale, null, [
-                'invoice' => $invoice,
-                'customer' => $validated['customer'] ?? 'Walk-in Customer',
-                'amount' => $totalAmount,
-                'items' => $totalItems,
-                'payment_method' => $validated['payment_method'],
-            ]);
+            $product->decrement('quantity', $item['quantity']);
+        }
 
-            return response()->json($sale->load('saleItems'), 201);
-        });
+        $sale->update([
+            'amount' => $totalAmount,
+            'items' => $totalItems,
+        ]);
+
+        $this->logActivity('sale_created', "Created sale: {$invoice}", $sale, null, [
+            'invoice' => $invoice,
+            'customer' => $validated['customer'] ?? 'Walk-in Customer',
+            'amount' => $totalAmount,
+            'items' => $totalItems,
+            'payment_method' => $validated['payment_method'],
+        ]);
+
+        return response()->json($sale->load('saleItems'), 201);
     }
 }

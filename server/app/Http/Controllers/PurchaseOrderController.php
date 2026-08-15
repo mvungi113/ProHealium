@@ -42,41 +42,39 @@ class PurchaseOrderController extends Controller
             'items.*.unit_cost' => 'required|numeric|min:0',
         ]);
 
-        return DB::transaction(function () use ($validated, $request) {
-            $poNumber = 'PO-' . str_pad(PurchaseOrder::count() + 1, 5, '0', STR_PAD_LEFT);
-            $total = 0;
+        $poNumber = 'PO-' . str_pad(PurchaseOrder::max('id') + 1, 5, '0', STR_PAD_LEFT);
+        $total = 0;
 
-            $po = PurchaseOrder::create([
-                'po_number' => $poNumber,
-                'supplier_id' => $validated['supplier_id'],
-                'user_id' => $request->user()->id,
-                'status' => 'draft',
-                'total' => 0,
-                'expected_date' => $validated['expected_date'],
-                'notes' => $validated['notes'],
+        $po = PurchaseOrder::create([
+            'po_number' => $poNumber,
+            'supplier_id' => $validated['supplier_id'],
+            'user_id' => $request->user()?->id,
+            'status' => 'draft',
+            'total' => 0,
+            'expected_date' => $validated['expected_date'],
+            'notes' => $validated['notes'],
+        ]);
+
+        foreach ($validated['items'] as $item) {
+            $product = Product::findOrFail($item['product_id']);
+            $subtotal = $item['unit_cost'] * $item['quantity'];
+            $total += $subtotal;
+
+            PurchaseOrderItem::create([
+                'purchase_order_id' => $po->id,
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'quantity' => $item['quantity'],
+                'unit_cost' => $item['unit_cost'],
+                'subtotal' => $subtotal,
             ]);
+        }
 
-            foreach ($validated['items'] as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                $subtotal = $item['unit_cost'] * $item['quantity'];
-                $total += $subtotal;
+        $po->update(['total' => $total]);
 
-                PurchaseOrderItem::create([
-                    'purchase_order_id' => $po->id,
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'quantity' => $item['quantity'],
-                    'unit_cost' => $item['unit_cost'],
-                    'subtotal' => $subtotal,
-                ]);
-            }
+        $this->logActivity('po_created', "Created purchase order: {$poNumber}", $po);
 
-            $po->update(['total' => $total]);
-
-            $this->logActivity('po_created', "Created purchase order: {$poNumber} ($" . number_format($total, 2) . ")", $po);
-
-            return response()->json($po->load(['supplier', 'items.product']), 201);
-        });
+        return response()->json($po->load(['supplier', 'items.product']), 201);
     }
 
     public function updateStatus(Request $request, PurchaseOrder $purchaseOrder)

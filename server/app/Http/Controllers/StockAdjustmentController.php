@@ -37,29 +37,27 @@ class StockAdjustmentController extends Controller
             'reference' => 'nullable|string|max:255',
         ]);
 
-        return DB::transaction(function () use ($validated, $request) {
-            $product = Product::findOrFail($validated['product_id']);
+        $product = Product::findOrFail($validated['product_id']);
 
-            $quantity = $validated['type'] === 'received' || $validated['type'] === 'return'
-                ? abs($validated['quantity'])
-                : -abs($validated['quantity']);
+        $quantity = $validated['type'] === 'received' || $validated['type'] === 'return'
+            ? abs($validated['quantity'])
+            : -abs($validated['quantity']);
 
-            $oldQuantity = $product->quantity;
+        $oldQuantity = $product->quantity;
 
-            $product->increment('quantity', $quantity);
+        $product->increment('quantity', $quantity);
 
-            $adjustment = StockAdjustment::create([
-                'product_id' => $validated['product_id'],
-                'user_id' => $request->user()->id,
-                'type' => $validated['type'],
-                'quantity' => $quantity,
-                'reason' => $validated['reason'],
-                'reference' => $validated['reference'],
-            ]);
+        $adjustment = StockAdjustment::create([
+            'product_id' => $validated['product_id'],
+            'user_id' => $request->user()?->id,
+            'type' => $validated['type'],
+            'quantity' => $quantity,
+            'reason' => $validated['reason'],
+            'reference' => $validated['reference'],
+        ]);
 
-            $this->logActivity('stock_adjusted', "Adjusted stock for {$product->name}: {$quantity} ({$validated['type']})", $product, ['quantity' => $oldQuantity], ['quantity' => $product->quantity]);
+        $this->logActivity('stock_adjusted', "Adjusted stock for {$product->name}: {$quantity} ({$validated['type']})", $product, ['quantity' => $oldQuantity], ['quantity' => $product->quantity]);
 
-            return response()->json($adjustment->load(['product', 'user']), 201);
-        });
+        return response()->json($adjustment->load(['product', 'user']), 201);
     }
 }

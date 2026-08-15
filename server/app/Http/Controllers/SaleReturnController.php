@@ -37,43 +37,41 @@ class SaleReturnController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        return DB::transaction(function () use ($validated, $request) {
-            $sale = Sale::findOrFail($validated['sale_id']);
-            $returnNumber = 'RET-' . str_pad(SaleReturn::count() + 1, 5, '0', STR_PAD_LEFT);
-            $refundAmount = 0;
+        $sale = Sale::findOrFail($validated['sale_id']);
+        $returnNumber = 'RET-' . str_pad(SaleReturn::max('id') + 1, 5, '0', STR_PAD_LEFT);
+        $refundAmount = 0;
 
-            $return = SaleReturn::create([
-                'return_number' => $returnNumber,
-                'sale_id' => $sale->id,
-                'user_id' => $request->user()->id,
-                'refund_amount' => 0,
-                'reason' => $validated['reason'],
-                'status' => 'pending',
+        $return = SaleReturn::create([
+            'return_number' => $returnNumber,
+            'sale_id' => $sale->id,
+            'user_id' => $request->user()?->id,
+            'refund_amount' => 0,
+            'reason' => $validated['reason'],
+            'status' => 'pending',
+        ]);
+
+        foreach ($validated['items'] as $item) {
+            $saleItem = SaleItem::findOrFail($item['sale_item_id']);
+            $qty = min($item['quantity'], $saleItem->quantity);
+            $subtotal = $saleItem->unit_price * $qty;
+            $refundAmount += $subtotal;
+
+            SaleReturnItem::create([
+                'sale_return_id' => $return->id,
+                'product_id' => $saleItem->product_id,
+                'product_name' => $saleItem->product_name,
+                'quantity' => $qty,
+                'unit_price' => $saleItem->unit_price,
+                'subtotal' => $subtotal,
             ]);
 
-            foreach ($validated['items'] as $item) {
-                $saleItem = SaleItem::findOrFail($item['sale_item_id']);
-                $qty = min($item['quantity'], $saleItem->quantity);
-                $subtotal = $saleItem->unit_price * $qty;
-                $refundAmount += $subtotal;
-
-                SaleReturnItem::create([
-                    'sale_return_id' => $return->id,
-                    'product_id' => $saleItem->product_id,
-                    'product_name' => $saleItem->product_name,
-                    'quantity' => $qty,
-                    'unit_price' => $saleItem->unit_price,
-                    'subtotal' => $subtotal,
-                ]);
-
-                if ($saleItem->product_id) {
-                    Product::where('id', $saleItem->product_id)->increment('quantity', $qty);
-                }
+            if ($saleItem->product_id) {
+                Product::where('id', $saleItem->product_id)->increment('quantity', $qty);
             }
+        }
 
-            $return->update(['refund_amount' => $refundAmount, 'status' => 'completed']);
-            $this->logActivity('return_created', "Created return: {$returnNumber} for {$sale->invoice} ($" . number_format($refundAmount, 2) . ")", $return);
-            return response()->json($return->load(['sale', 'user', 'items.product']), 201);
-        });
+        $return->update(['refund_amount' => $refundAmount, 'status' => 'completed']);
+        $this->logActivity('return_created', "Created return: {$returnNumber} for {$sale->invoice}", $return);
+        return response()->json($return->load(['sale', 'user', 'items.product']), 201);
     }
 }
