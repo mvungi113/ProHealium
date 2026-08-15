@@ -71,8 +71,6 @@ class PurchaseOrderController extends Controller
 
         $po->update(['total' => $total]);
 
-        $this->logActivity('po_created', "Created purchase order: {$poNumber}", $po);
-
         return response()->json($po->load(['supplier', 'items.product']), 201);
     }
 

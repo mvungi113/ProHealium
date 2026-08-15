@@ -127,6 +127,24 @@ Route::middleware('auth:sanctum')->group(function () {
         }
     });
 
+    Route::post('/debug/test-controller-stock', function (\Illuminate\Http\Request $request) {
+        try {
+            $controller = new \App\Http\Controllers\StockAdjustmentController();
+            return $controller->store($request);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine(), 'trace' => $e->getTraceAsString()], 500);
+        }
+    });
+
+    Route::post('/debug/test-controller-po', function (\Illuminate\Http\Request $request) {
+        try {
+            $controller = new \App\Http\Controllers\PurchaseOrderController();
+            return $controller->store($request);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine(), 'trace' => $e->getTraceAsString()], 500);
+        }
+    });
+
     Route::post('/debug/purchase-order', function (\Illuminate\Http\Request $request) {
         try {
             $validated = $request->validate([
