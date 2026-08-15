@@ -19,7 +19,7 @@ class CustomerController extends Controller
                 $qr->where('name', 'ilike', "%{$q}%")->orWhere('phone', 'ilike', "%{$q}%")->orWhere('email', 'ilike', "%{$q}%");
             });
         }
-        return response()->json($query->latest()->paginate(50));
+        return response()->json($query->latest()->get());
     }
 
     public function store(Request $request)

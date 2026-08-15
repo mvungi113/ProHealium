@@ -38,7 +38,7 @@ export default function Returns() {
   const [saleSearch, setSaleSearch] = useState("");
 
   const fetchReturns = async (p = 1) => {
-    try { const res = await api.get("/sale-returns", { params: { page: p } }); setReturns(res.data.data); setPage(res.data.current_page); setLastPage(res.data.last_page); } catch {} finally { setLoading(false); }
+    try { const res = await api.get("/sale-returns", { params: { page: p } }); setReturns(res.data.data || []); setPage(res.data.meta?.current_page || 1); setLastPage(res.data.meta?.last_page || 1); } catch {} finally { setLoading(false); }
   };
 
   useEffect(() => { fetchReturns(); }, []);

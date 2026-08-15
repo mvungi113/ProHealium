@@ -145,7 +145,7 @@ export default function Customers() {
   const [viewCustomer, setViewCustomer] = useState(null);
 
   const fetchCustomers = async () => {
-    try { const res = await api.get("/customers", { params: search ? { search } : {} }); setCustomers(res.data); } catch {} finally { setLoading(false); }
+    try { const res = await api.get("/customers", { params: search ? { search } : {} }); setCustomers(res.data.data || res.data); } catch {} finally { setLoading(false); }
   };
 
   useEffect(() => { fetchCustomers(); }, []);

@@ -59,8 +59,8 @@ export default function ActivityLog() {
       if (search) params.search = search;
       const response = await api.get("/activity-logs", { params });
       setLogs(response.data.data);
-      setPage(response.data.current_page);
-      setLastPage(response.data.last_page);
+      setPage(response.data.meta?.current_page || 1);
+      setLastPage(response.data.meta?.last_page || 1);
     } catch {} finally { setLoading(false); }
   };
 
