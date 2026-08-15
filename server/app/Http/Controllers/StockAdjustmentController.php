@@ -6,7 +6,6 @@ use App\Models\Product;
 use App\Models\StockAdjustment;
 use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class StockAdjustmentController extends Controller
 {
@@ -45,7 +44,7 @@ class StockAdjustmentController extends Controller
 
         $oldQuantity = $product->quantity;
 
-        $product->increment('quantity', $quantity);
+        $product->update(['quantity' => $product->quantity + $quantity]);
 
         $adjustment = StockAdjustment::create([
             'product_id' => $validated['product_id'],

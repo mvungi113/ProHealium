@@ -9,7 +9,6 @@ use App\Models\SaleReturnItem;
 use App\Models\SaleItem;
 use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class SaleReturnController extends Controller
 {

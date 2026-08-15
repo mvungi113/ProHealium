@@ -8,7 +8,6 @@ use App\Models\PurchaseOrderItem;
 use App\Models\StockAdjustment;
 use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderController extends Controller
 {
@@ -94,7 +93,7 @@ class PurchaseOrderController extends Controller
                     $product = Product::find($item->product_id);
                     if ($product) {
                         $oldQuantity = $product->quantity;
-                        $product->increment('quantity', $item->quantity);
+                        $product->update(['quantity' => $product->quantity + $item->quantity]);
                         $item->update(['received_quantity' => $item->quantity]);
 
                         StockAdjustment::create([
