@@ -100,4 +100,50 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::post('/notifications/check-alerts', [NotificationController::class, 'checkAlerts']);
+
+    Route::post('/debug/stock-adjustment', function (\Illuminate\Http\Request $request) {
+        try {
+            $validated = $request->validate([
+                'product_id' => 'required|exists:products,id',
+                'type' => 'required|in:received,damaged,expired,correction,return',
+                'quantity' => 'required|integer',
+                'reason' => 'nullable|string|max:500',
+                'reference' => 'nullable|string|max:255',
+            ]);
+            $product = \App\Models\Product::findOrFail($validated['product_id']);
+            $quantity = $validated['type'] === 'received' ? abs($validated['quantity']) : -abs($validated['quantity']);
+            $product->update(['quantity' => $product->quantity + $quantity]);
+            $adjustment = \App\Models\StockAdjustment::create([
+                'product_id' => $validated['product_id'],
+                'user_id' => $request->user()?->id,
+                'type' => $validated['type'],
+                'quantity' => $quantity,
+                'reason' => $validated['reason'] ?? null,
+                'reference' => $validated['reference'] ?? null,
+            ]);
+            return response()->json(['success' => true, 'id' => $adjustment->id]);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()], 500);
+        }
+    });
+
+    Route::post('/debug/purchase-order', function (\Illuminate\Http\Request $request) {
+        try {
+            $validated = $request->validate([
+                'items' => 'required|array|min:1',
+                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.quantity' => 'required|integer|min:1',
+                'items.*.unit_cost' => 'required|numeric|min:0',
+            ]);
+            $po = \App\Models\PurchaseOrder::create([
+                'po_number' => 'PO-DEBUG-' . time(),
+                'status' => 'draft',
+                'total' => 0,
+                'user_id' => $request->user()?->id,
+            ]);
+            return response()->json(['success' => true, 'id' => $po->id]);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()], 500);
+        }
+    });
 });
