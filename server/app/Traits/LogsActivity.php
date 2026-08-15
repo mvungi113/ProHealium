@@ -14,18 +14,22 @@ trait LogsActivity
         array $oldValues = null,
         array $newValues = null
     ) {
-        $request = request();
+        try {
+            $request = request();
 
-        ActivityLog::create([
-            'user_id' => $request->user()?->id,
-            'action' => $action,
-            'description' => $description,
-            'model_type' => $model ? get_class($model) : null,
-            'model_id' => $model?->id,
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+            ActivityLog::create([
+                'user_id' => $request->user()?->id,
+                'action' => $action,
+                'description' => $description,
+                'model_type' => $model ? get_class($model) : null,
+                'model_id' => $model?->id,
+                'old_values' => $oldValues,
+                'new_values' => $newValues,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        } catch (\Throwable $e) {
+            \Log::warning('Activity log failed', ['action' => $action, 'error' => $e->getMessage()]);
+        }
     }
 }

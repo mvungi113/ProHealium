@@ -22,6 +22,23 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/seed-default-user', [AuthController::class, 'seedDefaultUser']);
 
+Route::get('/debug/test-sale', function () {
+    try {
+        $conn = DB::connection();
+        $tables = $conn->select("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name");
+        return response()->json([
+            'driver' => $conn->getConfig('driver'),
+            'database' => $conn->getConfig('database'),
+            'tables' => array_map(fn($t) => $t->table_name, $tables),
+            'user_count' => \App\Models\User::count(),
+            'product_count' => \App\Models\Product::count(),
+            'sale_count' => \App\Models\Sale::count(),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json(['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
+    }
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
