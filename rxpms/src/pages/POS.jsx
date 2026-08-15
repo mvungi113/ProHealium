@@ -167,7 +167,6 @@ export default function POS() {
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
-    setProcessing(true);
     setError("");
     const invoice = `INV-${String(Date.now()).slice(-6)}`;
     const receiptData = buildReceiptData(invoice);
@@ -178,36 +177,31 @@ export default function POS() {
       payment_method: paymentMethod,
       items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
     };
-    const itemsForApi = saleData.items;
+
+    const updatedProducts = products.map((p) => {
+      const cartItem = cart.find((c) => c.id === p.id);
+      if (cartItem) return { ...p, quantity: Math.max(0, p.quantity - cartItem.quantity) };
+      return p;
+    });
+    useStore.setState({ products: updatedProducts });
+    clearCart();
+    setCustomerName("");
+    setActiveReceipt(receiptData);
 
     if (isOnline) {
-      try {
-        const res = await api.post("/sales", { customer: saleData.customer, payment_method: saleData.payment_method, items: itemsForApi });
-        updateReceiptSyncStatus(invoice, true, res.data.id);
-        await fetchProducts();
-        clearCart();
-        setCustomerName("");
-        setActiveReceipt(receiptData);
-      } catch (err) {
-        const msg = err.response?.data?.message || err.message || "Sale failed";
-        setError(`Sale not recorded: ${msg}`);
-        updateReceiptSyncStatus(invoice, false);
-        queueSale(saleData);
-      }
+      api.post("/sales", { customer: saleData.customer, payment_method: saleData.payment_method, items: saleData.items })
+        .then(async (res) => {
+          updateReceiptSyncStatus(invoice, true, res.data.id);
+          await fetchProducts();
+        })
+        .catch(() => {
+          updateReceiptSyncStatus(invoice, false);
+          queueSale(saleData);
+        });
     } else {
       queueSale(saleData);
-      const updatedProducts = products.map((p) => {
-        const cartItem = cart.find((c) => c.id === p.id);
-        if (cartItem) return { ...p, quantity: Math.max(0, p.quantity - cartItem.quantity) };
-        return p;
-      });
-      useStore.setState({ products: updatedProducts });
       updateReceiptSyncStatus(invoice, false);
-      clearCart();
-      setCustomerName("");
-      setActiveReceipt(receiptData);
     }
-    setProcessing(false);
   };
 
   const handleNewSale = () => {
@@ -508,15 +502,11 @@ export default function POS() {
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
 
               {/* Pay Button */}
-              <button onClick={handleCheckout} disabled={processing}
-                className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary/90 py-3.5 text-sm font-extrabold text-white shadow-xl shadow-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/40 active:scale-[0.98] disabled:opacity-50">
-                {processing ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4 transition-transform group-hover:rotate-12" />
-                )}
-                {processing ? "Processing..." : `Pay ${formatCurrency(total)}`}
-                {!processing && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
+              <button onClick={handleCheckout}
+                className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary/90 py-3.5 text-sm font-extrabold text-white shadow-xl shadow-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/40 active:scale-[0.98]">
+                <Sparkles className="h-4 w-4 transition-transform group-hover:rotate-12" />
+                Pay {formatCurrency(total)}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </button>
 
               {!isOnline && (

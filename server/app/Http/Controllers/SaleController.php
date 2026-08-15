@@ -5,14 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
-    use LogsActivity;
-
     public function index()
     {
         return response()->json(
@@ -27,8 +23,6 @@ class SaleController extends Controller
 
     public function update(Request $request, Sale $sale)
     {
-        $oldValues = $sale->toArray();
-
         $validated = $request->validate([
             'customer' => 'nullable|string|max:255',
             'status' => 'required|in:Completed,Refunded,Cancelled',
@@ -37,23 +31,17 @@ class SaleController extends Controller
 
         $sale->update($validated);
 
-        $this->logActivity('sale_updated', "Updated sale: {$sale->invoice}", $sale, $oldValues, $validated);
-
         return response()->json($sale->load('saleItems'));
     }
 
     public function destroy(Sale $sale)
     {
-        $invoice = $sale->invoice;
-
         foreach ($sale->saleItems as $item) {
             if ($item->product_id) {
                 Product::where('id', $item->product_id)->increment('quantity', $item->quantity);
             }
         }
         $sale->delete();
-
-        $this->logActivity('sale_deleted', "Deleted sale: {$invoice}");
 
         return response()->json(['message' => 'Sale deleted successfully']);
     }
@@ -68,22 +56,15 @@ class SaleController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        $invoice = 'INV-' . strtoupper(substr(uniqid(), -8));
+        $productIds = array_column($validated['items'], 'product_id');
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
         $totalAmount = 0;
         $totalItems = 0;
-
-        $sale = Sale::create([
-            'invoice' => $invoice,
-            'customer' => $validated['customer'] ?? 'Walk-in Customer',
-            'amount' => 0,
-            'items' => 0,
-            'status' => 'Completed',
-            'payment_method' => $validated['payment_method'],
-            'user_id' => $request->user()?->id,
-        ]);
+        $saleItems = [];
 
         foreach ($validated['items'] as $item) {
-            $product = Product::findOrFail($item['product_id']);
+            $product = $products[$item['product_id']];
 
             if ($product->quantity < $item['quantity']) {
                 return response()->json(['message' => "Not enough stock for {$product->name}"], 422);
@@ -93,31 +74,38 @@ class SaleController extends Controller
             $totalAmount += $subtotal;
             $totalItems += $item['quantity'];
 
-            SaleItem::create([
-                'sale_id' => $sale->id,
+            $saleItems[] = [
                 'product_id' => $product->id,
                 'product_name' => $product->name,
                 'quantity' => $item['quantity'],
                 'unit_price' => $product->unit_price,
                 'subtotal' => $subtotal,
-            ]);
-
-            $product->decrement('quantity', $item['quantity']);
+            ];
         }
 
-        $sale->update([
-            'amount' => $totalAmount,
-            'items' => $totalItems,
-        ]);
+        $invoice = 'INV-' . strtoupper(substr(uniqid(), -8));
 
-        $this->logActivity('sale_created', "Created sale: {$invoice}", $sale, null, [
+        $sale = Sale::create([
             'invoice' => $invoice,
             'customer' => $validated['customer'] ?? 'Walk-in Customer',
             'amount' => $totalAmount,
             'items' => $totalItems,
+            'status' => 'Completed',
             'payment_method' => $validated['payment_method'],
+            'user_id' => $request->user()?->id,
         ]);
 
-        return response()->json($sale->load('saleItems'), 201);
+        foreach ($saleItems as &$si) {
+            $si['sale_id'] = $sale->id;
+        }
+        SaleItem::insert($saleItems);
+
+        foreach ($validated['items'] as $item) {
+            Product::where('id', $item['product_id'])->decrement('quantity', $item['quantity']);
+        }
+
+        $sale->load('saleItems');
+
+        return response()->json($sale, 201);
     }
 }
