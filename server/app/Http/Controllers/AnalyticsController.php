@@ -6,6 +6,8 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class AnalyticsController extends Controller
 {
@@ -15,39 +17,36 @@ class AnalyticsController extends Controller
         $txPage = $request->get('tx_page', 1);
         $txPerPage = $request->get('tx_per_page', 10);
 
-        $salesQuery = Sale::where('status', 'Completed');
-        $previousSalesQuery = Sale::where('status', 'Completed');
-
         $start = $this->getPeriodStart($period);
         $prevStart = $this->getPreviousPeriodStart($period);
 
-        $salesQuery->where('created_at', '>=', $start);
-        $previousSalesQuery->where('created_at', '>=', $prevStart)->where('created_at', '<', $start);
+        $current = Sale::where('status', 'Completed')->where('created_at', '>=', $start)
+            ->selectRaw('COALESCE(SUM(amount), 0) as total_revenue, COUNT(*) as total_orders, COALESCE(SUM(items), 0) as total_items')
+            ->first();
 
-        $sales = $salesQuery->get();
-        $previousSales = $previousSalesQuery->get();
+        $previous = Sale::where('status', 'Completed')
+            ->where('created_at', '>=', $prevStart)->where('created_at', '<', $start)
+            ->selectRaw('COALESCE(SUM(amount), 0) as total_revenue, COUNT(*) as total_orders, COALESCE(SUM(items), 0) as total_items')
+            ->first();
 
-        $totalRevenue = $sales->sum('amount');
-        $prevRevenue = $previousSales->sum('amount');
+        $totalRevenue = (float) $current->total_revenue;
+        $prevRevenue = (float) $previous->total_revenue;
         $revenueChange = $prevRevenue > 0 ? round((($totalRevenue - $prevRevenue) / $prevRevenue) * 100, 1) : 0;
 
-        $totalOrders = $sales->count();
-        $prevOrders = $previousSales->count();
+        $totalOrders = (int) $current->total_orders;
+        $prevOrders = (int) $previous->total_orders;
         $ordersChange = $prevOrders > 0 ? round((($totalOrders - $prevOrders) / $prevOrders) * 100, 1) : 0;
 
         $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
         $prevAvg = $prevOrders > 0 ? $prevRevenue / $prevOrders : 0;
         $avgChange = $prevAvg > 0 ? round((($avgOrderValue - $prevAvg) / $prevAvg) * 100, 1) : 0;
 
-        $totalItemsSold = $sales->sum('items');
-        $prevItemsSold = $previousSales->sum('items');
+        $totalItemsSold = (int) $current->total_items;
+        $prevItemsSold = (int) $previous->total_items;
         $itemsChange = $prevItemsSold > 0 ? round((($totalItemsSold - $prevItemsSold) / $prevItemsSold) * 100, 1) : 0;
 
-        $products = Product::all();
-        $totalInventoryValue = $products->sum(fn ($p) => $p->unit_price * $p->quantity);
-        $totalStockCount = $products->sum('quantity');
-        $lowStockCount = $products->filter(fn ($p) => $p->quantity <= $p->reorder_level && $p->quantity > 0)->count();
-        $outOfStockCount = $products->where('quantity', '<=', 0)->count();
+        $inventory = Product::selectRaw('COUNT(*) as total_products, COALESCE(SUM(quantity), 0) as total_stock, COALESCE(SUM(unit_price * quantity), 0) as total_value, COUNT(*) FILTER (WHERE quantity <= 0) as out_of_stock, COUNT(*) FILTER (WHERE quantity > 0 AND quantity <= reorder_level) as low_stock')
+            ->first();
 
         $monthly = $this->getMonthlyData($period);
         $dailySales = $this->getDailySales($period);
@@ -59,7 +58,7 @@ class AnalyticsController extends Controller
 
         return response()->json([
             'summary' => [
-                'totalRevenue' => (float) $totalRevenue,
+                'totalRevenue' => $totalRevenue,
                 'revenueChange' => $revenueChange,
                 'totalOrders' => $totalOrders,
                 'ordersChange' => $ordersChange,
@@ -69,11 +68,11 @@ class AnalyticsController extends Controller
                 'itemsChange' => $itemsChange,
             ],
             'inventory' => [
-                'totalValue' => (float) $totalInventoryValue,
-                'totalStock' => $totalStockCount,
-                'lowStock' => $lowStockCount,
-                'outOfStock' => $outOfStockCount,
-                'totalProducts' => $products->count(),
+                'totalValue' => (float) $inventory->total_value,
+                'totalStock' => (int) $inventory->total_stock,
+                'lowStock' => (int) $inventory->low_stock,
+                'outOfStock' => (int) $inventory->out_of_stock,
+                'totalProducts' => (int) $inventory->total_products,
             ],
             'monthly' => $monthly,
             'dailySales' => $dailySales,

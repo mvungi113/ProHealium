@@ -16,10 +16,10 @@ class CustomerController extends Controller
         if ($request->filled('search')) {
             $q = $request->search;
             $query->where(function ($qr) use ($q) {
-                $qr->where('name', 'like', "%{$q}%")->orWhere('phone', 'like', "%{$q}%")->orWhere('email', 'like', "%{$q}%");
+                $qr->where('name', 'ilike', "%{$q}%")->orWhere('phone', 'ilike', "%{$q}%")->orWhere('email', 'ilike', "%{$q}%");
             });
         }
-        return response()->json($query->latest()->get());
+        return response()->json($query->latest()->paginate(50));
     }
 
     public function store(Request $request)

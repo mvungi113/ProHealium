@@ -68,7 +68,7 @@ class SaleController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        $invoice = 'INV-' . str_pad(Sale::max('id') + 1, 4, '0', STR_PAD_LEFT);
+        $invoice = 'INV-' . strtoupper(substr(uniqid(), -8));
         $totalAmount = 0;
         $totalItems = 0;
 

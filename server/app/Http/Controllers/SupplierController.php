@@ -12,7 +12,7 @@ class SupplierController extends Controller
 
     public function index()
     {
-        return response()->json(Supplier::latest()->get());
+        return response()->json(Supplier::latest()->paginate(50));
     }
 
     public function store(Request $request)
