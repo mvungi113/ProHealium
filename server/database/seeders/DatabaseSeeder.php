@@ -60,8 +60,10 @@ class DatabaseSeeder extends Seeder
             'payment_methods' => 'Cash,Card',
         ];
 
-        foreach ($defaultSettings as $key => $value) {
-            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
+        if (Setting::count() === 0) {
+            foreach ($defaultSettings as $key => $value) {
+                Setting::create(['key' => $key, 'value' => $value]);
+            }
         }
 
         if (Sale::count() === 0) {

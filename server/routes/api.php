@@ -17,10 +17,22 @@ use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/seed-default-user', [AuthController::class, 'seedDefaultUser']);
+
+Route::get('/debug/db', function () {
+    $conn = DB::connection();
+    return response()->json([
+        'driver' => $conn->getConfig('driver'),
+        'host' => $conn->getConfig('host'),
+        'database' => $conn->getConfig('database'),
+        'user_count' => \App\Models\User::count(),
+        'users' => \App\Models\User::select('id', 'name', 'email')->get(),
+    ]);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
