@@ -39,6 +39,33 @@ Route::get('/debug/test-sale', function () {
     }
 });
 
+Route::post('/debug/test-sale', function (\Illuminate\Http\Request $request) {
+    try {
+        $user = $request->user();
+        $product = \App\Models\Product::firstOrFail();
+        $invoice = 'TEST-' . time();
+
+        $sale = \App\Models\Sale::create([
+            'invoice' => $invoice,
+            'customer' => 'Debug Customer',
+            'amount' => 10.00,
+            'items' => 1,
+            'status' => 'Completed',
+            'payment_method' => 'cash',
+            'user_id' => $user?->id,
+        ]);
+
+        return response()->json(['success' => true, 'sale_id' => $sale->id, 'invoice' => $invoice]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ], 500);
+    }
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);

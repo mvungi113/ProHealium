@@ -46,7 +46,7 @@ class NotificationController extends Controller
         $lowStock = $products->filter(fn($p) => $p->quantity <= $p->reorder_level && $p->quantity > 0);
         foreach ($lowStock as $p) {
             $exists = Notification::where('type', 'low_stock')
-                ->whereRaw("json_extract(data, '$.product_id') = ?", [$p->id])
+                ->whereRaw("data->>'product_id' = ?", [$p->id])
                 ->whereDate('created_at', today())
                 ->exists();
             if (!$exists) {
@@ -64,7 +64,7 @@ class NotificationController extends Controller
         $expiring = $products->filter(fn($p) => $p->expiry_date && Carbon::parse($p->expiry_date)->isFuture() && now()->diffInDays(Carbon::parse($p->expiry_date)) <= 30);
         foreach ($expiring as $p) {
             $exists = Notification::where('type', 'expiry')
-                ->whereRaw("json_extract(data, '$.product_id') = ?", [$p->id])
+                ->whereRaw("data->>'product_id' = ?", [$p->id])
                 ->whereDate('created_at', today())
                 ->exists();
             if (!$exists) {
