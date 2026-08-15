@@ -7,3 +7,4 @@ rxpms/dist
 **/.env
 **/.DS_Store
 server/vendor
+**/database.sqlite

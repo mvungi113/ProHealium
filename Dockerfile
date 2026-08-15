@@ -23,11 +23,11 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 COPY server .
 
-RUN rm -f .env \
+RUN rm -f .env database/database.sqlite \
     && mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
     && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "php artisan migrate --force 2>&1 && php artisan db:seed --force 2>&1; php artisan serve --host=0.0.0.0 --port=8000 2>&1"]
+CMD ["sh", "-c", "printenv | grep -E '^(APP_|DB_|SESSION_|CACHE_|QUEUE_|FRONTEND_|SANCTUM_|LOG_|BCRYPT_|MAIL_)' > .env; grep -q '^APP_KEY=.' .env || php artisan key:generate --force 2>/dev/null; php artisan migrate --force 2>&1 && php artisan db:seed --force 2>&1; php artisan serve --host=0.0.0.0 --port=8000 2>&1"]
