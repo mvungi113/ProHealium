@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $outOfStock = $products->where('quantity', '<=', 0)->count();
         $expiringItems = $products->filter(fn($p) => $p->expiry_date && \Carbon\Carbon::parse($p->expiry_date)->isFuture() && now()->diffInDays(\Carbon\Carbon::parse($p->expiry_date)) <= 90)->count();
 
-        $weeklySales = Sale::selectRaw('strftime("%w", created_at) as day, SUM(amount) as total')
+        $weeklySales = Sale::selectRaw('EXTRACT(DOW FROM created_at)::int as day, SUM(amount) as total')
             ->where('status', 'Completed')
             ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
             ->groupBy('day')

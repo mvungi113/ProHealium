@@ -113,7 +113,7 @@ class AnalyticsController extends Controller
 
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-        return Sale::selectRaw('strftime("%m", created_at) as month, SUM(amount) as revenue, COUNT(*) as orders, SUM(items) as items_sold')
+        return Sale::selectRaw('EXTRACT(MONTH FROM created_at)::int as month, SUM(amount) as revenue, COUNT(*) as orders, SUM(items) as items_sold')
             ->where('status', 'Completed')
             ->where('created_at', '>=', $start)
             ->groupBy('month')
@@ -219,7 +219,7 @@ class AnalyticsController extends Controller
     {
         $start = $this->getPeriodStart($period);
 
-        return Sale::selectRaw('strftime("%H", created_at) as hour, SUM(amount) as revenue, COUNT(*) as orders')
+        return Sale::selectRaw('EXTRACT(HOUR FROM created_at)::int as hour, SUM(amount) as revenue, COUNT(*) as orders')
             ->where('status', 'Completed')
             ->where('created_at', '>=', $start)
             ->groupBy('hour')

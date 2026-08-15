@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, Package, Clock, Shield, XCircle, Search } from "lucide-react";
 import { useStore } from "../store/appStore";
 import { formatCurrency, formatDate, getDaysUntilExpiry, cn } from "../lib/utils";
@@ -47,8 +47,11 @@ function UrgencyBar({ days }) {
 
 export default function ExpiryAlerts() {
   const products = useStore((s) => s.products);
+  const fetchProducts = useStore((s) => s.fetchProducts);
   const [filter, setFilter] = useState("expiring");
   const [search, setSearch] = useState("");
+
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const getExpiryProducts = () => {
     return products

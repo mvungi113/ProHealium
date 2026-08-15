@@ -35,9 +35,12 @@ function BarcodeLabel({ product }) {
 
 export default function BarcodeGenerator() {
   const products = useStore((s) => s.products);
+  const fetchProducts = useStore((s) => s.fetchProducts);
   const [selected, setSelected] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [search, setSearch] = useState("");
+
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
