@@ -51,8 +51,8 @@ class StockAdjustmentController extends Controller
             'user_id' => $request->user()?->id,
             'type' => $validated['type'],
             'quantity' => $quantity,
-            'reason' => $validated['reason'],
-            'reference' => $validated['reference'],
+            'reason' => $validated['reason'] ?? null,
+            'reference' => $validated['reference'] ?? null,
         ]);
 
         $this->logActivity('stock_adjusted', "Adjusted stock for {$product->name}: {$quantity} ({$validated['type']})", $product, ['quantity' => $oldQuantity], ['quantity' => $product->quantity]);
